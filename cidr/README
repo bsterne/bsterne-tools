@@ -2,8 +2,11 @@ cidr.py is a Python script that converts a CIDR Block into a list of individual
 IP addresses, one-per-line.
 
 Sample Usage:
-    brandon@zodiac ~ $ cidr 192.168.1.5/30
-    192.168.1.4
-    192.168.1.5
-    192.168.1.6
-    192.168.1.7
+brandon@zodiac ~ $ cidr 192.168.1.5/30
+192.168.1.4
+192.168.1.5
+192.168.1.6
+192.168.1.7
+
+See Also:
+http://brandon.sternefamily.net/posts/2007/12/python-cidr-block-converter/
