@@ -1,0 +1,12 @@
+This is a bookmarklet that analyzes the content on the current page and
+recommends a Content Security Policy based on the types of content it finds on
+the page and the sources of that content. The implementation also takes into
+account resources that are dynamically added to the page by JavaScript.
+
+Usage:
+1. Visit any web page in your browser.
+2. Click the bookmarklet.
+3. Observe the recommended Content Security Policy.
+
+See Also:
+http://brandon.sternefamily.net/posts/2010/10/content-security-policy-recommendation-bookmarklet/
