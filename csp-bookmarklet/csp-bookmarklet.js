@@ -1,6 +1,6 @@
 /*
  * Content Security Policy recommendation bookmarklet
- * Brandon Sterne <bsterne@mozilla.com> 
+ * Brandon Sterne <bsterne@mozilla.com>
  *
  * Walks through the current document and analyzes content types and
  * sources to provide a policy recommendation
@@ -69,6 +69,9 @@ var directives = {
   'style': 'style-src'
 };
 
+// keep track of potential inline script violations
+var violations = [];
+
 // return a word with the first letter capitalized
 function capWord(w) {
   return w.charAt(0).toUpperCase() + w.slice(1);
@@ -84,14 +87,23 @@ function objIsEmpty(obj) {
 }
 
 // turn a list of sources into proper CSP syntax
-function generatePolicyFromSources(sourceList) {
-  var policy = "allow 'self';";
+function generatePolicyFromSources(sourceList, violations) {
+  var policy = "Recommended Policy:\n";
+  policy += "allow 'self';";
   for (type in sourceList) {
     // skip types which have no sources specified
     if (objIsEmpty(sourceList[type]))
       continue;
     policy += " " + directives[type] + " " +
               Object.keys(sourceList[type]).join(" ") + ";";
+  }
+  // add potential inline script violations
+  if (violations.length) {
+    policy += "\n\n";
+    policy += (violations.length == 1) ? "Inline Script Violation:" :
+                                         "Inline Script Violations:";
+    for (var v = 0 ; v < violations.length ; v++)
+      policy += "\n" + (v+1) + ": " + violations[v];
   }
   return policy;
 }
@@ -110,7 +122,7 @@ Object.keys = Object.keys || function(obj) {
 // sources being used for each type
 function analyzeContent() {
   // use 'self' for content from this host
-  var myHost = parseUri(location.href).host;
+  var myHost = parseUri(window.location.href).host;
 
   /* images */
   var images = getElements("img");
@@ -189,7 +201,7 @@ function analyzeContent() {
         sources.script[host] = null;
     }
   }
-  
+
   /* <object>, <applet>, <embed> */
   // object, applet
   // http://www.w3.org/TR/1999/REC-html401-19991224/struct/objects.html#h-13.3
@@ -212,7 +224,7 @@ function analyzeContent() {
           sources.object[host] = null;
       }
     }
-    
+
     // classid: location of an object's implementation.
     // XXX bsterne - spec says this is a URI, but in the wild this usually
     // references a COM registry ID.
@@ -384,7 +396,42 @@ function analyzeContent() {
     }
   }
 
-  alert(generatePolicyFromSources(sources));
+  /* inline script violations */
+  var allElems = getElements("*");
+  for (var e = 0 ; e < allElems.length ; e++) {
+    // check attributes of the element
+    var elem = allElems[e];
+    var attrs = [];
+    for (var key in elem.attributes) {
+      if (!isNaN(key)) {
+        attrs.push(elem.attributes[key].name);
+      }
+    }
+
+    for (var i = 0 ; i < attrs.length ; i++) {
+      if (attrs[i].match(/^on/)) {
+        var attr_pairs = []
+        for (var j = 0 ; j < attrs.length ; j++) {
+          // shorten the white space to make the output more readable
+          var attr_val = elem.attributes[attrs[j]].nodeValue.replace(/\s+/g, " ");
+          attr_pairs.push(attrs[j] + '="' + attr_val + '"');
+        }
+        var error = attrs[i] + " on element <" + elem.nodeName + " " +
+          attr_pairs.join(" ") + ">";
+        violations.push("event handling attribute: " + error);
+      }
+    }
+
+    // if elem is a script tag, see if it has a body
+    if (elem.nodeName === "SCRIPT" && elem.text.length) {
+      var script = (elem.text.length > 100) ? elem.text.substr(0, 100) + " ... " :
+                                              elem.text;
+      violations.push("internal script node: " + script);
+    }
+  }
+
+  // return the recommended policy and any inline script violations
+  alert( generatePolicyFromSources(sources, violations) );
 }
 
 analyzeContent();
