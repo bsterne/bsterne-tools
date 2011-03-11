@@ -1,0 +1,68 @@
+<html>
+
+<head>
+  <title>CSP Bookmarklet Test</title>
+</head>
+
+<body>
+  <h1>CSP Bookmarklet Test</h1>
+
+  <p><strong>Verify that the output from the <code>window.alert()</code>
+  is:</strong></p>
+
+  <p>Recommended Policy:</p>
+  <pre>allow 'self'; img-src image.example.com; media-src video.example.com
+audio.example.com; script-src script.example.com 'self'; object-src
+object.example.com codebase.example.com embed.example.com; frame-src
+frame.example.com; font-src font.example.com; style-src
+style.example.com;</pre>
+
+  <p>Inline Script Violations:</p>
+  <pre>1: event handling attribute: onerror on element &lt;SCRIPT onerror="bad_event_handler()" id="script_test" src="https://script.example.com/d.js"&gt;
+2: internal script node:
+  // inline script block
+  bad_inline_statement = 1;</pre>
+
+  <p>Image test:</p>
+  <img src="http://image.example.com/a.jpg" />
+
+  <p>Media test:</p>
+  <audio src="http://audio.example.com/b.ogg"></audio>
+  <video src="http://video.example.com/c.avi"></video>
+
+  <p>Script test 1:</p>
+  <script src="https://script.example.com/d.js" id="script_test"
+          onerror="bad_event_handler()"></script>
+
+  <p>Script test 2:</p>
+  <script>
+  // inline script block
+  bad_inline_statement = 1;
+  </script>
+
+  <p>Object test:</p>
+  <object data="http://object.example.com/e.swf"></object>
+  <applet codebase="http://codebase.example.com/f.foo"></applet>
+  <embed src="http://embed.example.com/g.bar"></embed>
+
+  <p>Frame test:</p>
+  <iframe src="http://frame.example.com/h.html"></iframe>
+
+  <p>Font test:</p>
+  <style type="text/css">
+    @font-face {
+      font-family: "Bitstream Vera Serif Bold";
+      src: url("http://font.example.com/i.ttf");
+    }
+    .fonttest { font-family: "Bitstream Vera Serif Bold", serif }
+  </style>
+  <p class="fonttest">This has a downloadable font applied...</p>
+
+  <p>Stylesheet test:</p>
+  <link rel="stylesheet" type="text/css" href="http://style.example.com/j.css" />
+</body>
+
+<!-- load the bookmarklet and observe the test output -->
+<script src="csp-bookmarklet.js"></script>
+
+</html>
