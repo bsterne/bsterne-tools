@@ -2,8 +2,9 @@
 # Copyright (c) 2007 Brandon Sterne
 # Licensed under the MIT license.
 # http://brandon.sternefamily.net/files/mit-license.txt
-# CIDR Block Converter - 2007
-import sys, re
+# CIDR Block Converter - Updated 2018-08-27
+import re
+import sys
 
 # convert an IP address from its dotted-quad format to its
 # 32 binary digit representation
@@ -44,7 +45,7 @@ def bin2ip(b):
     return ip[:-1]
 
 # print a list of IP addresses based on the CIDR block specified
-def printCIDR(c):
+def printCIDR(c, range_mode):
     parts = c.split("/")
     baseIP = ip2bin(parts[0])
     subnet = int(parts[1])
@@ -57,6 +58,11 @@ def printCIDR(c):
     # the prefix with each of the suffixes in the subnet
     else:
         ipPrefix = baseIP[:-(32-subnet)]
+        # print only the IP range, e.g. 10.1.1.0-10.1.1.15
+        if range_mode:
+            print "%s-%s" % (bin2ip(ipPrefix+dec2bin(0, (32-subnet))),
+                             bin2ip(ipPrefix+dec2bin(2**(32-subnet)-1, (32-subnet))))
+            return
         for i in range(2**(32-subnet)):
             print bin2ip(ipPrefix+dec2bin(i, (32-subnet)))
 
@@ -83,9 +89,10 @@ def validateCIDRBlock(b):
     return True
 
 def printUsage():
-    print "Usage: ./cidr.py <prefix>/<subnet>\n  e.g. ./cidr.py 10.1.1.1/28" + \
-          "\n  e.g. ./cidr.py 192.168.1/24"
-    
+    print "Usage: ./cidr.py <prefix>/<subnet> [--range]\n" + \
+          "  e.g. ./cidr.py 10.1.1.1/28\n" + \
+          "       ./cidr.py 192.168.1/24 --range"
+
 def main():
     # get the CIDR block from the command line args
     try:
@@ -98,7 +105,7 @@ def main():
         printUsage()
     # print the user-specified CIDR block
     else:
-        printCIDR(cidrBlock)
+        printCIDR(cidrBlock, sys.argv[-1] == "--range")
 
 if __name__ == "__main__":
     main()
